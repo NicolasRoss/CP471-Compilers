@@ -1,6 +1,9 @@
 import java.io.*;
 import java.util.*;
 
+import java.io.*;
+import java.util.*;
+
 class Token {
     public Type type;
     public String name;
@@ -31,33 +34,86 @@ class Type {
 
 public class Lexer {
     private static final List<String> RESERVED = Arrays.asList("int", "while", "do", "od", "print", "double", "def", "fed", "return", "if", "fi", "then", "and", "not", "or");
-    private static final List<Character> TERMINALS = Arrays.asList(',', ':', '(', ')', '<', '>', '[', ']', '=', '+', '-', '*', '/', '%', '.');
-    private static final List<Character> SPACES = Arrays.asList(' ', '\t', '\n');
+    private static final List<Character> TERMINALS = Arrays.asList(',', ';', '(', ')', '<', '>', '[', ']', '=', '+', '-', '*', '/', '%', '.');
+    private static final List<Character> SPACES = Arrays.asList(' ', '\t', '\r', '\n');
     private static final List<String> symbols = new ArrayList<String>();
-
+    private static char c = ' ';
+    
+    // Constructor
     public Lexer() {
         for (String str : RESERVED) { symbols.add(str); }
     }
 
-    public static String getNextToken(int c) throws IOException {
+    public static boolean isLetter(int c) {
+        return (c >= 97 && c <= 122);
+    }
+
+    public static boolean isDigit(int c) {
+        return (c >= 48 && c <= 57);
+    }
+
+    public static boolean read(char next) throws IOException {
+        c = (char) System.in.read();
+        if (c != next) { 
+            return false;
+        
+        } else {
+            c = (char) System.in.read(); 
+            return true;
+        }
+    }
+
+    public static String getNextToken() throws IOException {
         // Skip whitespace
+
         while (SPACES.contains(c)) {
-            c = System.in.read();
+            c = (char) System.in.read();
+        }
+        
+        // Check for Comparators
+        switch(c) {
+            case '=':
+                if (read('=')) { 
+                    return "<" + Type.COMPARATOR.getType() + ", '=='>";
+        
+                } else {
+                    return "<" + Type.TERMINAL.getType() + ", '='>";
+                }
+            
+            case '<':
+                if (read('=')) {
+                    return "<" + Type.COMPARATOR.getType() + ", '<='>";
+
+                } else if (c == '>') {
+                    c = (char) System.in.read();
+                    return "<" + Type.COMPARATOR.getType() + ", '<>'>";
+
+                } else {
+                    return "<" + Type.COMPARATOR.getType() + ", '<'>";
+
+                }
+
+            case '>':
+                if (read('=')) { 
+                    return "<" + Type.COMPARATOR.getType() + ", '>='>";
+
+                } else {
+                    return "<" + Type.COMPARATOR.getType() + ", '>'>";
+                }
+
         }
 
-        
-
         // Check if the token is a valid string
-        if (Character.isLetter(c)) {
+        if (isLetter(c)) {
             String id = "";
-            
-            while (Character.isLetter(c) || Character.isDigit(c)) {
+            while (isLetter(c) || isDigit(c)) {
                 id += (char) c;
-                c = System.in.read();
+                c = (char) System.in.read();
             }
             
             if (symbols.contains(id)) {
                 int index = symbols.indexOf(id);
+
                 // Check if the token is reserved or not
                 if (index < RESERVED.size())  {
                     return "<" + id + ">";
@@ -66,76 +122,98 @@ public class Lexer {
                     return "<" + Type.ID.getType() + ", " + index + ">";
 
                 }
+
             // Add token to known symbols if not already included
             } else {
                 symbols.add(id);
                 int index = symbols.size();
                 return "<" + Type.ID.getType() + ", " + index + ">";
             }
+
         // Check if the token is a valid number
-        } else if (Character.isDigit(c)) {
+        } else if (isDigit(c)) {
             String num = "";
 
-            while (Character.isLetter(c) || Character.isDigit(c)) {
+            while (isDigit(c)) {
                 num += (char) c;
-                c = System.in.read();
+                c = (char) System.in.read();
             }
+
             // Checks if its a valid integer or not
-            if (c != '.') {
-                return "<" + Type.INT.getType() + ", " + num + ">";
-            
-            } else if (Character.isLetter(c) && c != 'e' && c != 'E') {
+            if (isLetter(c) && c != 'e' && c != 'E') {
+                while (isLetter(c) || isDigit(c)) {
+                    num += (char) c;
+                    c = (char) System.in.read();
+                }
+                
                 return "<" + Type.ERROR.getType() + ">";
+            
+            } else if (c != '.') {
+                return "<" + Type.INT.getType() + ", " + num + ">";
+
             // Checks if its a double
             } else {
                 num += (char) c;
-                c = System.in.read();
+                c = (char) System.in.read();
 
-                while (Character.isDigit(c)) {
+                while (isDigit(c)) {
                     num += (char) c;
-                    c = System.in.read();
+                    c = (char) System.in.read();
                 }
+
                 // Check for scientific notation
                 if (c == 'e' || c == 'E') {
                     num += (char) c;
-                    c = System.in.read();
+                    c = (char) System.in.read();
                     
                     if (c == '-' || c == '+') {
                         num += (char) c;
-                        c = System.in.read();
+                        c = (char) System.in.read();
 
                     }
 
-                    if (Character.isDigit(c)) {
-                        while (Character.isDigit(c)) {
+                    if (isDigit(c)) {
+                        while (isDigit(c)) {
                             num += (char) c;
-                            c = System.in.read();
+                            c = (char) System.in.read();
                         }
                     // Is invalid double
+
                     } else {
+                        System.out.println((char) c);
                         return "<" + Type.ERROR.getType() + ">";
                     }
                 // Is invalid double
-                } else if (Character.isLetter(c)) {
+                } else if (isLetter(c)) {
                     return "<" + Type.ERROR.getType() + ">";
                 } 
             // Is valid double
             return "<" + Type.DOUBLE.getType() + ", " + num + ">";
             }
-        }
+    
+        } else if (TERMINALS.contains(c)) {
+            if (c == '.') {
+                return "<" + Type.END.getType() + ">";
 
-        return "fails";
+            } else {
+                String token =  "<" + Type.TERMINAL.getType() + ", '" + (char) c + "'>";
+                c = (char) System.in.read();
+                return token;
+            }
+
+        } else {
+            String token = "<" + Type.ERROR.getType() + ">";
+            c = (char) System.in.read();
+            return token;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Lexer lexer = new Lexer();
-        int c = System.in.read();
         int i = 0;
-        while (c != -1) {
-            // System.out.println((char) c);
-            System.out.print(getNextToken(c));
+        while (c != '.') {
+            System.out.print(getNextToken());
             System.out.print("");
-            c = System.in.read();
         }
     }
 }
