@@ -1,36 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-import java.io.*;
-import java.util.*;
-
-class Token {
-    public Type type;
-    public String name;
-    // Constructors
-    public Token(String n, Type t) { name = n; type = t; }
-    public Token(char n, Type t) { name = String.valueOf(n); type = t; }
-    // Get Methods
-    public String getName() { return name; }
-    public Type getTokenType() { return type; }
-}
-
-class Type {
-    public String type;
-    // Constructors
-    public Type(String t) { type = t; }
-    // Get Method
-    public String getType() { return type; }
-    // Token Types
-    public static final Type RESERVED = new Type("reserved"),
-                             ID = new Type("id"),
-                             INT = new Type("int"),
-                             DOUBLE = new Type("double"),
-                             COMPARATOR = new Type("comparator"),
-                             TERMINAL = new Type("terminal"),
-                             ERROR = new Type("error"),
-                             END = new Type("end");
-}
+// Add token class and complete html encoding
 
 public class Lexer {
     private static final List<String> RESERVED = Arrays.asList("int", "while", "do", "od", "print", "double", "def", "fed", "return", "if", "fi", "then", "and", "not", "or");
@@ -52,20 +23,8 @@ public class Lexer {
         return (c >= 48 && c <= 57);
     }
 
-    public static boolean read(char next) throws IOException {
-        c = (char) System.in.read();
-        if (c != next) { 
-            return false;
-        
-        } else {
-            c = (char) System.in.read(); 
-            return true;
-        }
-    }
-
     public static String getNextToken() throws IOException {
         // Skip whitespace
-
         while (SPACES.contains(c)) {
             c = (char) System.in.read();
         }
@@ -73,32 +32,35 @@ public class Lexer {
         // Check for Comparators
         switch(c) {
             case '=':
-                if (read('=')) { 
-                    return "<" + Type.COMPARATOR.getType() + ", '=='>";
+                c = (char) System.in.read();
+                if (c == '=') { 
+                    return "<COMPARATOR, '=='>";
         
                 } else {
-                    return "<" + Type.TERMINAL.getType() + ", '='>";
+                    return "<TERMINAL, '='>";
                 }
             
             case '<':
-                if (read('=')) {
-                    return "<" + Type.COMPARATOR.getType() + ", '<='>";
+                c = (char) System.in.read();
+                if (c == '=') {
+                    return "<COMPARATOR, '<='>";
 
                 } else if (c == '>') {
                     c = (char) System.in.read();
-                    return "<" + Type.COMPARATOR.getType() + ", '<>'>";
+                    return "<COMPARATOR, '<>'>";
 
                 } else {
-                    return "<" + Type.COMPARATOR.getType() + ", '<'>";
+                    return "<COMPARATOR, '<'>";
 
                 }
 
             case '>':
-                if (read('=')) { 
-                    return "<" + Type.COMPARATOR.getType() + ", '>='>";
+                c = (char) System.in.read();
+                if (c == '=') { 
+                    return "<COMPARATOR, '>='>";
 
                 } else {
-                    return "<" + Type.COMPARATOR.getType() + ", '>'>";
+                    return "<COMPARATOR, '>'>";
                 }
 
         }
@@ -116,10 +78,10 @@ public class Lexer {
 
                 // Check if the token is reserved or not
                 if (index < RESERVED.size())  {
-                    return "<" + id + ">";
+                    return "<" + id.toUpperCase() + ">";
                 
                 } else {
-                    return "<" + Type.ID.getType() + ", " + index + ">";
+                    return "<ID, " + index + ">";
 
                 }
 
@@ -127,7 +89,7 @@ public class Lexer {
             } else {
                 symbols.add(id);
                 int index = symbols.size();
-                return "<" + Type.ID.getType() + ", " + index + ">";
+                return "<ID, " + index + ">";
             }
 
         // Check if the token is a valid number
@@ -146,10 +108,10 @@ public class Lexer {
                     c = (char) System.in.read();
                 }
                 
-                return "<" + Type.ERROR.getType() + ">";
+                return "<ERROR>";
             
             } else if (c != '.') {
-                return "<" + Type.INT.getType() + ", " + num + ">";
+                return "<INT, " + num + ">";
 
             // Checks if its a double
             } else {
@@ -177,32 +139,38 @@ public class Lexer {
                             num += (char) c;
                             c = (char) System.in.read();
                         }
-                    // Is invalid double
 
+                    // Is invalid double
                     } else {
-                        System.out.println((char) c);
-                        return "<" + Type.ERROR.getType() + ">";
+                        return "<ERROR>";
                     }
+
                 // Is invalid double
                 } else if (isLetter(c)) {
-                    return "<" + Type.ERROR.getType() + ">";
+                    while (isLetter(c) || isDigit(c) || TERMINALS.contains(c)) {
+                        num += (char) c;
+                        c = (char) System.in.read();
+                    }
+
+                    return "<ERROR>";
                 } 
+
             // Is valid double
-            return "<" + Type.DOUBLE.getType() + ", " + num + ">";
+            return "<DOUBLE, " + num + ">";
             }
     
         } else if (TERMINALS.contains(c)) {
             if (c == '.') {
-                return "<" + Type.END.getType() + ">";
+                return "<END>";
 
             } else {
-                String token =  "<" + Type.TERMINAL.getType() + ", '" + (char) c + "'>";
+                String token =  "<TERMINAL, '" + (char) c + "'>";
                 c = (char) System.in.read();
                 return token;
             }
 
         } else {
-            String token = "<" + Type.ERROR.getType() + ">";
+            String token = "<ERROR>";
             c = (char) System.in.read();
             return token;
         }
@@ -210,10 +178,12 @@ public class Lexer {
 
     public static void main(String[] args) throws IOException {
         Lexer lexer = new Lexer();
-        int i = 0;
-        while (c != '.') {
-            System.out.print(getNextToken());
-            System.out.print("");
+        String token = "";
+
+        while (token.compareTo("<END>") != 0) {
+            token = getNextToken();
+            System.out.print(token);
+            System.out.print(" ");
         }
     }
 }
