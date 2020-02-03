@@ -18,7 +18,7 @@ class Token {
         else if (this.getType().equals("SPACE")) return "<SPACE>";
         else if (this.getType().equals("NEWLINE")) return "<NEWLINE>";
         else if (this.getType().equals("TAB")) return "<TAB>";
-
+        
         return "<" + this.getType() + ", '" + this.getValue() +"'>";
     }
 }
@@ -34,7 +34,8 @@ public class Lexer {
     public Lexer() {
         for (String str : RESERVED) { symbols.add(str); }
     }
-
+    
+    // Creates an html doc of the input code.
     public static void encode(ArrayList<Token> tokens) {
         String header = "<!DOCTYPE html>\n<html>\n\t<style>body { background-color: black; } </style>\n";
         String comment = "\t<!--\n\t";
@@ -65,7 +66,8 @@ public class Lexer {
         body = body + "\t\t</p>\n\t</body>\n</html>";
         System.out.print(header + comment + body);
     }
-
+    
+    // Sets the colour of each token based on the type
     public static String setColour(Token token) {
         switch(token.getType()) {
             case "RESERVED":
@@ -115,6 +117,7 @@ public class Lexer {
         return (c >= 48 && c <= 57);
     }
 
+    // Creates and returns the next token from the input code
     public static Token getNextToken() throws IOException {
         // Skip whitespace
         while (SPACES.contains(c)) {
