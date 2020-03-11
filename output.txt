@@ -1,0 +1,17 @@
+def int 17(int 18, int 19)
+   if (18==19) then
+    return (18)
+      fi;
+  if (18>19) then
+    return (17(18- 19, 19)
+      )
+         else return (17(18, 19- 18)
+         )
+            fi;
+      fed;
+    print 17(DOUBLE , DOUBLE )
+         ;
+      print DOUBLE ;
+      print DOUBLE * (17(DOUBLE , DOUBLE )
+            + DOUBLE )
+               . 

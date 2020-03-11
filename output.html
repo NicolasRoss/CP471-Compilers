@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+	<style>body { background-color: black; } </style>
+	<!--
+	<DEF> <INT> <ID, '16'> <TERMINAL, '('> <INT> <ID, '17'> <TERMINAL, ','> <INT> 
+	<ID, '18'> <TERMINAL, ')'> <IF> <TERMINAL, '('> <ID, '17'> <COMPARATOR, '=='> <TERMINAL, '='> <ID, '18'> 
+	<TERMINAL, ')'> <THEN> <RETURN> <TERMINAL, '('> <ID, '17'> <TERMINAL, ')'> <FI> <TERMINAL, ';'> 
+	<IF> <TERMINAL, '('> <ID, '17'> <COMPARATOR, '>'> <ID, '18'> <TERMINAL, ')'> <THEN> <RETURN> 
+	<TERMINAL, '('> <ID, '16'> <TERMINAL, '('> <ID, '17'> <TERMINAL, '-'> <ID, '18'> <TERMINAL, ','> <ID, '18'> 
+	<TERMINAL, ')'> <TERMINAL, ')'> <ID, '19'> <RETURN> <TERMINAL, '('> <ID, '16'> <TERMINAL, '('> <ID, '17'> 
+	<TERMINAL, ','> <ID, '18'> <TERMINAL, '-'> <ID, '17'> <TERMINAL, ')'> <TERMINAL, ')'> <FI> <TERMINAL, ';'> 
+	<FED> <TERMINAL, ';'> <PRINT> <ID, '16'> <TERMINAL, '('> <INTEGER, '21'> <TERMINAL, ','> <INTEGER, '15'> 
+	<TERMINAL, ')'> <TERMINAL, ';'> <PRINT> <INTEGER, '45'> <TERMINAL, ';'> <PRINT> <INTEGER, '2'> <TERMINAL, '*'> 
+	<TERMINAL, '('> <ID, '16'> <TERMINAL, '('> <INTEGER, '21'> <TERMINAL, ','> <INTEGER, '28'> <TERMINAL, ')'> <TERMINAL, '+'> 
+	<INTEGER, '6'> <TERMINAL, ')'> <END> 
+	-->
+	<body>
+		<p>
+			<font color="#FF00E8" size="14">def</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">int</font>
+			<font size="14">&nbsp</font>
+			<font color="#FFF300" size="14">gcd</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FF00E8" size="14">int</font>
+			<font size="14">&nbsp</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#0FFF00" size="14">,</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">int</font>
+			<font size="14">&nbsp</font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">)</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">if</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#FF9300" size="14">==</font>
+			<font color="#0FFF00" size="14">=</font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">then</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">return</font>
+			<font size="14">&nbsp</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#0FFF00" size="14">)</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">fi</font>
+			<font color="#0FFF00" size="14">;</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">if</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#FF9300" size="14">></font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">then</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">return</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">gcd</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#0FFF00" size="14">-</font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">,</font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font color="#0FFF00" size="14">)</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FFF300" size="14">else</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">return</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">gcd</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#0FFF00" size="14">,</font>
+			<font color="#FFF300" size="14">b</font>
+			<font color="#0FFF00" size="14">-</font>
+			<font color="#FFF300" size="14">a</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font color="#0FFF00" size="14">)</font>
+		</p>
+		<p>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font size="14">&nbsp</font>
+			<font color="#FF00E8" size="14">fi</font>
+			<font color="#0FFF00" size="14">;</font>
+		</p>
+		<p>
+			<font color="#FF00E8" size="14">fed</font>
+			<font color="#0FFF00" size="14">;</font>
+		</p>
+		<p>
+			<font color="#FF00E8" size="14">print</font>
+			<font size="14">&nbsp</font>
+			<font color="#FFF300" size="14">gcd</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#005DFF" size="14">21</font>
+			<font color="#0FFF00" size="14">,</font>
+			<font color="#005DFF" size="14">15</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font color="#0FFF00" size="14">;</font>
+		</p>
+		<p>
+			<font color="#FF00E8" size="14">print</font>
+			<font size="14">&nbsp</font>
+			<font color="#005DFF" size="14">45</font>
+			<font color="#0FFF00" size="14">;</font>
+		</p>
+		<p>
+			<font color="#FF00E8" size="14">print</font>
+			<font size="14">&nbsp</font>
+			<font color="#005DFF" size="14">2</font>
+			<font color="#0FFF00" size="14">*</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#FFF300" size="14">gcd</font>
+			<font color="#0FFF00" size="14">(</font>
+			<font color="#005DFF" size="14">21</font>
+			<font color="#0FFF00" size="14">,</font>
+			<font size="14">&nbsp</font>
+			<font color="#005DFF" size="14">28</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font size="14">&nbsp</font>
+			<font color="#0FFF00" size="14">+</font>
+			<font size="14">&nbsp</font>
+			<font color="#005DFF" size="14">6</font>
+			<font color="#0FFF00" size="14">)</font>
+			<font color="#FFFFFF" size="14">.</font>
+		</p>
+	</body>
+</html>
