@@ -67,6 +67,16 @@ class SymbolTable {
         return false;
     }
 
+    public boolean contains(String name) {
+        for (int i = 0; i < symbols.size(); i++) {
+            if (symbols.get(i).getName().equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void add(Entry entry) {
         if (!symbols.contains(entry)) {
             symbols.add(entry);
@@ -140,6 +150,7 @@ class Node {
             System.out.println(root.getValue()); 
             if (root.getRight() != null) { printTree(root.getRight()); }
             if (root.children.size() > 0) {
+                // System.out.println("size:" + root.children.size());
                 for (int i = 0; i < root.children.size(); i++) {
                     printTree(root.children.get(i));
                 }
@@ -160,17 +171,17 @@ class Eval {
 
     public String getCurrFunction() { return function; }
 
-    public Node evaluate(Node root) {
+    public void evaluate(Node root) {
         // System.out.println(function);
         Node node = null;
+        // System.out.println(root.getValue());
         for (Node n : root.getChildren()) { 
             node = statements(n);
             if (node != null) {
-                return node;
+                System.out.println(function);
+                System.out.println("output:" + node.getValue());
             }
         }
-
-        return null;
     }
 
     public Node statements(Node n) {
@@ -179,6 +190,10 @@ class Eval {
         // System.out.println(n.getValue());
         if (n.getValue().equals("=")) {
             value = expressions(n.getRight());
+            if (value instanceof String) {
+                value = Parser.getTable(function).get(value.toString()).getValue();
+            }
+
             Parser.updateFuncTable(function, n.getLeft().getValue(), value);
 
         } else if (n.getValue().equals("if")) {
@@ -190,7 +205,7 @@ class Eval {
             } else { 
                 if (n.getRight() != null) {
                     if (n.getRight().getChildren().size() > 0) {
-                        for (Node root : n.getChildren()) {
+                        for (Node root : n.getRight().getChildren()) {
                             statements(root);
                         }
                     }
@@ -205,7 +220,17 @@ class Eval {
             }
 
         } else if (n.getValue().equals("print")) {
-            statements(n.getLeft());
+            // System.out.println(n.getLeft().getRight().getValue());
+            node = statements(n.getLeft());
+            if (node != null) {   
+                System.out.println(node.getValue());
+                if (Parser.getTable(function).contains(node.getValue())) {
+                    node = new Node(Parser.getTable(function).get(node.getValue().toString()).getValue().toString());
+                    
+                } else {
+                    node = new Node(expressions(node).toString()); 
+                }
+            }
 
         } else if (n.getValue().equals("return")) {
             node = statements(n.getLeft());
@@ -238,7 +263,7 @@ class Eval {
                 for (Node node2 : n.getChildren()) { 
                     value = expressions(node2);
                     if (value instanceof String) { value = (Object) Parser.getTable(function).get(value.toString()).getValue(); }
-                    System.out.println(value);
+                    // System.out.println(value);
                     numbers.add(value);
                 }  
 
@@ -253,69 +278,69 @@ class Eval {
                 }
             }
             
-            function = n.getValue();
-            Node funcNode = Parser.getFuncNode(function);
-            evaluate(funcNode);
-        }     
+            
+            // function = n.getValue();
+            // Node funcNode = Parser.getFuncNode(function);
+            // if (funcNode != null) {
+            //     evaluate(funcNode);
+            // }
+            
+            node = n;
+        }
 
-        return null;
+        return node;
     }
 
     public Object expressions(Node n) {
         Object value = null;
         if (n.getValue().equals("+")) {
-            value = expressions(n.getRight());
-            if (value != null) { n.getRight().setValue(value.toString()); }
+            Object r  = expressions(n.getRight());
+            Object l  = expressions(n.getLeft());
 
-            Object l = resolve(n.getLeft());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            Object r = resolve(n.getRight());
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
 
+            // System.out.println(l + " " + r);
             value = numericOperation("+", l, r);
 
         } else if (n.getValue().equals("-")) {
-           value = expressions(n.getRight());
-            if (value != null) { n.getRight().setValue(value.toString()); }
+            Object r  = expressions(n.getRight());
+            Object l  = expressions(n.getLeft());
 
-            Object l = resolve(n.getLeft());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            Object r = resolve(n.getRight());
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
             
+            // System.out.println(l + " " + r);
             value = numericOperation("-", l, r);
         
         } else if (n.getValue().equals("*")) {
-            value = expressions(n.getRight());
-            if (value != null) { n.getRight().setValue(value.toString()); }
+            Object r  = expressions(n.getRight());
+            Object l  = expressions(n.getLeft());
 
-            Object l = resolve(n.getLeft());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            Object r = resolve(n.getRight());
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
             
+            // System.out.println(l + " " + r);
             value = numericOperation("*", l, r);
         
         } else if (n.getValue().equals("/")) {
-            value = expressions(n.getRight());
-            if (value != null) { n.getRight().setValue(value.toString()); }
+            Object r  = expressions(n.getRight());
+            Object l  = expressions(n.getLeft());
 
-            Object l = resolve(n.getLeft());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            Object r = resolve(n.getRight());
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
             
+            // System.out.println(l + " " + r);
             value = numericOperation("/", l, r);
         
         } else if (n.getValue().equals("%")) {
-            value = expressions(n.getRight());
-            if (value != null) { n.getRight().setValue(value.toString()); }
+            Object r  = expressions(n.getRight());
+            Object l  = expressions(n.getLeft());
 
-            Object l = resolve(n.getLeft());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            Object r = resolve(n.getRight());
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
             
+            // System.out.println(l + " " + r);
             value = numericOperation("%", l, r);
 
         } else {
@@ -381,7 +406,7 @@ class Eval {
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
             if (comparison("==", l, r)) { 
-                System.out.println (l + " " + r);
+                // System.out.println (l + " " + r);
                 condition = true;
 
             } else { 
@@ -393,6 +418,8 @@ class Eval {
             Object r = expressions(n.getRight());
             if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
             if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+
+            // System.out.println(l + " " + r);
             if (comparison("<>", l, r)) { 
                 condition = true;
 
@@ -429,7 +456,6 @@ class Eval {
 
     public Object numericOperation(String op, Object x, Object y) {
         Object result = null;
-
         if (x instanceof Integer && y instanceof Integer) { result = numericOperation(op, (int) x, (int) y); }
         else if (x instanceof Double && y instanceof Double) { result = numericOperation(op, (double) x, (double) y); }
         else { System.out.println("error"); System.exit(0); }
@@ -495,6 +521,7 @@ class Eval {
 
     public boolean comparison(String op, Object x, Object y) {
         boolean result = false;
+        // System.out.println(x instanceof String);
         if (x instanceof Integer && y instanceof Integer) { result = comparison(op, (int) x, (int) y); }
         else if (x instanceof Double && y instanceof Double) { result = comparison(op, (double) x, (double) y); }
         else { System.out.println("error"); System.exit(0); }
@@ -814,6 +841,11 @@ public class Parser {
                     currNode = optElse;
                     optional(); isMatch("fi");
                     node.setRight(optElse);
+                    // System.out.println(node.getRight().getValue());
+                    // for (Node n : node.getRight().getChildren()) {
+                    //     System.out.print(n.getValue() + " ");
+                    // }
+                    // System.out.println();
                     currNode = tmp;
                     currNode.addChild(node);
                     return node;
