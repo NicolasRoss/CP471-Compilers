@@ -53,8 +53,11 @@ class SymbolTable {
         return null;
     }
 
+    public Entry get(Integer i) { return symbols.get(i); }
+
     public ArrayList<Entry> getSymbols() { return symbols; }
 
+    public void updateVal(Integer index, Object value) { symbols.get(index).setValue(value);}
     public void updateVal(String varName, Object value) { get(varName).setValue(value); }
 
     public boolean contains(Entry entry) {
@@ -122,6 +125,7 @@ class Node {
     private Node left;
     private Node right;
     private String value = null;
+    public SymbolTable symbols;
     private ArrayList<Node> children;
 
     public Node(String v) {
@@ -129,6 +133,7 @@ class Node {
         left = null;
         right = null;
         children = new ArrayList<Node>();
+        symbols = new SymbolTable(v);
     }
 
     public Node getLeft() { return left; }
@@ -160,145 +165,113 @@ class Node {
 }
 
 class Eval {
-    private String function;
+    private Node funcNode;
+    private Node prevFuncNode;
 
     public Eval(Node root) {
         if (root != null) {
-            function = root.getValue();
+            funcNode = root;
+            prevFuncNode = null;
+            funcNode.symbols = Parser.getSymbolTable(root.getValue());
             evaluate(root);
         }
     }
 
-    public String getCurrFunction() { return function; }
-
-    public void evaluate(Node root) {
-        // System.out.println(function);
+    public Node evaluate(Node root) {
         Node node = null;
-        // System.out.println(root.getValue());
         for (Node n : root.getChildren()) { 
             node = statements(n);
             if (node != null) {
-                System.out.println(function);
-                System.out.println("output:" + node.getValue());
+                return node;
             }
         }
+
+        return node;
     }
 
+    public Node getStart() { return funcNode; }
+    public String getFuncName() { return funcNode.getValue(); }
+    public String getPrevFunc() { return prevFuncNode.getValue(); }
+
     public Node statements(Node n) {
-        Object value = null;
-        Node node = null;
-        // System.out.println(n.getValue());
+        Node node = null; Object value = null;
+       
         if (n.getValue().equals("=")) {
             value = expressions(n.getRight());
-            if (value instanceof String) {
-                value = Parser.getTable(function).get(value.toString()).getValue();
-            }
-
-            Parser.updateFuncTable(function, n.getLeft().getValue(), value);
+            // System.out.println(n.getLeft().getValue());
+            // funcNode.symbols.printSymbolTable();
+            funcNode.symbols.updateVal(n.getLeft().getValue(), value);
 
         } else if (n.getValue().equals("if")) {
             if (conditionals(n.getLeft())) {
-                for (Node root : n.getChildren()) {
-                    statements(root);
+                for (int i = 0; i < n.getChildren().size(); i++) {
+                    node = statements(n.getChildren().get(i));
+
+                    if (node != null) {
+                        return node;
+                    }
                 }
-            
-            } else { 
-                if (n.getRight() != null) {
-                    if (n.getRight().getChildren().size() > 0) {
-                        for (Node root : n.getRight().getChildren()) {
-                            statements(root);
-                        }
+
+            } else {
+                for (int i = 0; i < n.getRight().getChildren().size(); i++) {
+                    node = statements(n.getRight().getChildren().get(i));
+
+                    if (node != null) {
+                        return node;
                     }
                 }
             }
 
         } else if (n.getValue().equals("while")) {
             while(conditionals(n.getLeft())) {
-                for (Node root : n.getChildren()) {
-                    statements(root);
+                for (int i = 0; i < n.getChildren().size(); i++) {
+                    node = statements(n.getChildren().get(i));
+                    
+                    if (node != null) {
+                        return node;
+                    }
                 }
             }
 
+            
         } else if (n.getValue().equals("print")) {
-            // System.out.println(n.getLeft().getRight().getValue());
-            node = statements(n.getLeft());
-            if (node != null) {   
-                System.out.println(node.getValue());
-                if (Parser.getTable(function).contains(node.getValue())) {
-                    node = new Node(Parser.getTable(function).get(node.getValue().toString()).getValue().toString());
-                    
-                } else {
-                    node = new Node(expressions(node).toString()); 
-                }
-            }
+            // System.out.println(n.getValue());
+            value = expressions(n.getLeft());
+            System.out.println(value);
 
         } else if (n.getValue().equals("return")) {
-            node = statements(n.getLeft());
+            node = new Node(expressions(n.getLeft()).toString());
+            funcNode.symbols = Parser.getSymbolTable(prevFuncNode.getValue());
+            funcNode = prevFuncNode;
+            // prevFuncNode = null;
+            
 
-            if (node != null) {
-                return node;
+        } else if (Parser.getFuncNode(n.getValue()) != null) {
+            SymbolTable table = Parser.getSymbolTable(n.getValue());
+            ArrayList<Node> children = n.getChildren();
+        
+            for (int i = 0; i < children.size(); i++) {
+                table.updateVal(i, expressions(children.get(i)));
             }
 
-        } else {
-            String name = n.getValue();
-            Entry entry = null;
+            node = Parser.getFuncNode(n.getValue());
+            node.symbols = table;
 
-            if (function == "global") {
-                for (Node node1 : n.getChildren()) { 
-                    value = expressions(node1);
-                    SymbolTable table = Parser.getTable(name);
-
-                    for (Entry e : table.getSymbols()) {
-                        if (e.getValue() == null) {
-                            entry = e;
-                            break;
-                        }
-                    }
-
-                    Parser.updateFuncTable(name, entry.getName(), value);
-                }
-            
-            } else {
-                ArrayList<Object> numbers = new ArrayList<Object>();
-                for (Node node2 : n.getChildren()) { 
-                    value = expressions(node2);
-                    if (value instanceof String) { value = (Object) Parser.getTable(function).get(value.toString()).getValue(); }
-                    // System.out.println(value);
-                    numbers.add(value);
-                }  
-
-                if (function.equals(name)) {
-                    ArrayList<Entry> table = Parser.getTable(name).getSymbols();
-                    for (int i = 0; i < numbers.size(); i++) {
-                        Parser.updateFuncTable(name, table.get(i).getName(), numbers.get(i)); 
-                    }
-
-                // } else {
-                //     System.out.println(Parser.getTable(function).get(n.getValue()).getValue());
-                }
-            }
-            
-            
-            // function = n.getValue();
-            // Node funcNode = Parser.getFuncNode(function);
-            // if (funcNode != null) {
-            //     evaluate(funcNode);
-            // }
-            
-            node = n;
+            evaluate(node);
         }
 
         return node;
     }
 
     public Object expressions(Node n) {
-        Object value = null;
+        Object value = null; Object intORdub = resolve(n);
+
         if (n.getValue().equals("+")) {
             Object r  = expressions(n.getRight());
             Object l  = expressions(n.getLeft());
-
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+    
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
 
             // System.out.println(l + " " + r);
             value = numericOperation("+", l, r);
@@ -307,8 +280,8 @@ class Eval {
             Object r  = expressions(n.getRight());
             Object l  = expressions(n.getLeft());
 
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             
             // System.out.println(l + " " + r);
             value = numericOperation("-", l, r);
@@ -317,8 +290,8 @@ class Eval {
             Object r  = expressions(n.getRight());
             Object l  = expressions(n.getLeft());
 
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             
             // System.out.println(l + " " + r);
             value = numericOperation("*", l, r);
@@ -327,8 +300,8 @@ class Eval {
             Object r  = expressions(n.getRight());
             Object l  = expressions(n.getLeft());
 
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             
             // System.out.println(l + " " + r);
             value = numericOperation("/", l, r);
@@ -337,14 +310,37 @@ class Eval {
             Object r  = expressions(n.getRight());
             Object l  = expressions(n.getLeft());
 
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             
             // System.out.println(l + " " + r);
             value = numericOperation("%", l, r);
 
+        } else if (Parser.getFuncNode(n.getValue()) != null) {
+            SymbolTable table = Parser.getSymbolTable(n.getValue());
+            ArrayList<Node> children = n.getChildren();
+
+            for (int i = 0; i < children.size(); i++) {
+                table.updateVal(i, expressions(children.get(i)));
+            }
+           
+            Node node = Parser.getFuncNode(n.getValue());
+            node.symbols = table;
+            n.symbols = table;
+            prevFuncNode = funcNode;
+            funcNode = n;
+
+            return expressions(evaluate(node));
+
+        } else if (funcNode.symbols.contains(n.getValue())) {
+            return funcNode.symbols.get(n.getValue()).getValue();
+
+        } else if (intORdub instanceof Integer || intORdub instanceof Double) {
+            value = intORdub;
+    
         } else {
-            value = resolve(n);
+            // System.out.println(n.getValue());
+            Parser.error();
         }
 
         return value;
@@ -352,11 +348,12 @@ class Eval {
 
     public boolean conditionals(Node n) {
         boolean condition = false;
+
         if (n.getValue().equals("<")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             if (comparison("<", l, r)) { 
                 condition = true;
 
@@ -367,8 +364,8 @@ class Eval {
         } else if (n.getValue().equals(">")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             if (comparison(">", l, r)) { 
                 condition = true;
 
@@ -379,8 +376,8 @@ class Eval {
         } else if (n.getValue().equals("<=")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             if (comparison("<=", l, r)) { 
                 condition = true;
 
@@ -391,8 +388,8 @@ class Eval {
         } else if (n.getValue().equals(">=")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             if (comparison(">=", l, r)) { 
                 condition = true;
 
@@ -403,10 +400,10 @@ class Eval {
         } else if (n.getValue().equals("==")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
             if (comparison("==", l, r)) { 
-                // System.out.println (l + " " + r);
                 condition = true;
 
             } else { 
@@ -416,8 +413,8 @@ class Eval {
         } else if (n.getValue().equals("<>")) {
             Object l = expressions(n.getLeft());
             Object r = expressions(n.getRight());
-            if (l instanceof String) { l = (Object) Parser.getTable(function).get(l.toString()).getValue(); }
-            if (r instanceof String) { r = (Object) Parser.getTable(function).get(r.toString()).getValue(); }
+            if (l instanceof String) { l = (Object) Parser.getTable(getFuncName()).get(l.toString()).getValue(); }
+            if (r instanceof String) { r = (Object) Parser.getTable(getFuncName()).get(r.toString()).getValue(); }
 
             // System.out.println(l + " " + r);
             if (comparison("<>", l, r)) { 
@@ -458,7 +455,7 @@ class Eval {
         Object result = null;
         if (x instanceof Integer && y instanceof Integer) { result = numericOperation(op, (int) x, (int) y); }
         else if (x instanceof Double && y instanceof Double) { result = numericOperation(op, (double) x, (double) y); }
-        else { System.out.println("error"); System.exit(0); }
+        else { Parser.error(); }
 
         return result;
     }
@@ -521,10 +518,10 @@ class Eval {
 
     public boolean comparison(String op, Object x, Object y) {
         boolean result = false;
-        // System.out.println(x instanceof String);
+        // System.out.println(y instanceof String);
         if (x instanceof Integer && y instanceof Integer) { result = comparison(op, (int) x, (int) y); }
         else if (x instanceof Double && y instanceof Double) { result = comparison(op, (double) x, (double) y); }
-        else { System.out.println("error"); System.exit(0); }
+        else { Parser.error(); }
 
         return result;
     }
@@ -662,12 +659,22 @@ public class Parser {
     }
 
     public static ArrayList<SymbolTable> getFuncTable() { return funcTable; }
-    public static Node getFuncNode(String name) { 
+    public static Node getFuncNode (String name) { 
         for (Node n: funcNodes) {
             if (n.getValue().equals(name)) {
                 return n;
             }
         }
+        return null;
+    }
+
+    public static SymbolTable getSymbolTable(String funcName) {
+        for (SymbolTable s : funcTable) { 
+            if (s.getName().equals(funcName)) {
+                return s;
+            }
+        }
+
         return null;
     }
 
@@ -1308,8 +1315,8 @@ public class Parser {
         }
     }
 
-    public void error() {
-        System.out.println("Invalid Parse!");
+    public static void error() {
+        System.out.println("Error.");
         System.exit(0);
     }
 }
